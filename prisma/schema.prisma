@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String
+  description String
+  keywords    String   // JSON array as string
+  competitors String   // JSON array as string: [{name, domain}]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  probes       Probe[]
+  contents     Content[]
+  citationRuns CitationRun[]
+  alerts       Alert[]
+}
+
+model Probe {
+  id          String   @id @default(cuid())
+  brandId     String
+  query       String
+  category    String   // best-of, top-list, comparison, how-to, recommendation, alternative
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brand        Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  citationRuns CitationRun[]
+}
+
+model CitationRun {
+  id        String   @id @default(cuid())
+  brandId   String
+  probeId   String
+  status    String   @default("pending") // pending, running, completed, failed
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+
+  brand   Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  probe   Probe           @relation(fields: [probeId], references: [id], onDelete: Cascade)
+  results CitationResult[]
+}
+
+model CitationResult {
+  id               String   @id @default(cuid())
+  runId            String
+  provider         String   // openai, anthropic, google, perplexity
+  model            String
+  response         String   // full LLM response text
+  cited            Boolean  @default(false)
+  citationType     String?  // direct-mention, url-link, recommendation, comparison
+  sentiment        String?  // positive, neutral, negative
+  position         Int?     // ranking position if in a list
+  competitorsMentioned String? // JSON array of competitor names found
+  confidence       Float    @default(0)
+  latencyMs        Int      @default(0)
+  tokensUsed       Int      @default(0)
+  cost             Float    @default(0)
+  cached           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  run CitationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+model Content {
+  id            String   @id @default(cuid())
+  brandId       String
+  title         String
+  body          String
+  schemaMarkup  String?  // JSON-LD string
+  status        String   @default("idea") // idea, draft, review, published
+  contentType   String   @default("article") // article, faq, how-to, comparison
+  targetKeywords String? // JSON array
+  aeoScore      Float?   // estimated AEO optimization score
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  brand       Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  publishLogs PublishLog[]
+}
+
+model PublishTarget {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // wordpress, markdown, custom
+  config      String   // JSON: {url, apiKey, ...}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  publishLogs PublishLog[]
+}
+
+model PublishLog {
+  id          String   @id @default(cuid())
+  contentId   String
+  targetId    String
+  status      String   @default("pending") // pending, published, failed
+  publishedAt DateTime?
+  externalUrl String?
+  error       String?
+  createdAt   DateTime @default(now())
+
+  content Content       @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  target  PublishTarget @relation(fields: [targetId], references: [id], onDelete: Cascade)
+}
+
+model MonitoringSchedule {
+  id        String   @id @default(cuid())
+  name      String
+  cron      String   // cron expression
+  probeIds  String   // JSON array of probe IDs
+  isActive  Boolean  @default(true)
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  brandId   String
+  type      String   // citation-gained, citation-lost, competitor-change, sentiment-shift
+  message   String
+  data      String?  // JSON payload
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+}
+
+model ApiUsageLog {
+  id        String   @id @default(cuid())
+  provider  String
+  model     String
+  endpoint  String
+  tokensIn  Int      @default(0)
+  tokensOut Int      @default(0)
+  cost      Float    @default(0)
+  latencyMs Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model CacheEntry {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  type      String   // probe, content
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
