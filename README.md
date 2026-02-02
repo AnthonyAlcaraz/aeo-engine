@@ -1,8 +1,17 @@
 # AEO Engine
 
-**Self-hosted AI Engine Optimization platform.** Track how AI models cite your brand, validate citation likelihood with real LLM probes, and optimize content based on competitive intelligence.
+**Self-hosted Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) platform.** Track how AI models cite your brand, validate citation likelihood with real LLM probes, and optimize content based on competitive intelligence.
 
 AI engines (ChatGPT, Claude, Gemini, Perplexity) are replacing traditional search for millions of users. When someone asks "what's the best CRM tool?", the AI's answer determines who gets the customer. AEO Engine gives you visibility into those answers and tools to improve your position.
+
+### AEO + GEO: One Platform, Both Strategies
+
+The industry uses two terms for the same fundamental challenge: getting your content cited by AI systems.
+
+- **AEO (Answer Engine Optimization)** targets featured snippets, voice assistants, People Also Ask, and AI Overviews on Google — anywhere a direct answer replaces a blue link.
+- **GEO (Generative Engine Optimization)** targets generative AI platforms (ChatGPT, Claude, Perplexity, Gemini) that synthesize multi-source responses with citations.
+
+AEO Engine covers both. The probe system tests your content against generative AI platforms (GEO) while the structural scoring validates answer-engine readiness (AEO). The 3-component scoring system measures both: Citation Validation (50%) tests GEO — does the generative AI cite you? Structural Analysis (20%) tests AEO — is your content formatted for extraction? Competitive Gap (30%) benchmarks both against competitors.
 
 ## Features
 

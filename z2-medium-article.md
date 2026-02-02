@@ -1,10 +1,10 @@
 ---
-title: "I Built an Open Source AEO Engine Because $300/Month for LLM Probing is Absurd"
+title: "I Built an Open Source AEO/GEO Engine Because $300/Month for LLM Probing is Absurd"
 date: 2026-02-02
 type: medium
 status: draft
 featured-image: https://i.imgur.com/n7rLnxj.png
-themes: [aeo, answer-engine-optimization, ai-search, knowledge-graphs, open-source]
+themes: [aeo, geo, answer-engine-optimization, generative-engine-optimization, ai-search, knowledge-graphs, open-source]
 vault-sources: [_meta.md, Chapter 3 - Knowledge & Memory/_meta.md]
 gist-url: https://gist.github.com/AnthonyAlcaraz/242221d064f103e85deffb394ddca76c
 medium-publish-url:
@@ -13,20 +13,32 @@ medium-publish-url:
 > **Publishing Instructions:**
 > 1. **Import from Gist**: https://medium.com/p/import?url=https://gist.github.com/AnthonyAlcaraz/242221d064f103e85deffb394ddca76c
 > 2. Add featured image from: https://i.imgur.com/n7rLnxj.png
-> 3. Add tags: Answer Engine Optimization, AI Search, Knowledge Graphs, Open Source, SEO
+> 3. Add tags: Answer Engine Optimization, Generative Engine Optimization, AI Search, Knowledge Graphs, Open Source
 > 4. Update medium-publish-url in frontmatter after publishing
 
 ---
 
-# I Built an Open Source AEO Engine Because $300/Month for LLM Probing is Absurd
+# I Built an Open Source AEO/GEO Engine Because $300/Month for LLM Probing is Absurd
 
 The shift happened faster than anyone predicted. Gartner forecasts a 25% drop in traditional search engine volume by the end of 2026. Traffic from AI-generated answers grew 527% year-over-year. Visitors arriving from ChatGPT and Perplexity convert at 4.4x the rate of traditional organic search. And 72% of consumers say they will use AI-powered search more frequently, according to HubSpot's Consumer Trends Report.
 
 When someone asks an AI engine "what's the best project management tool?", the model synthesizes information from multiple sources and presents a consolidated answer. If your brand appears in that answer, you captured a customer. If it doesn't, you're invisible. Over 70% of searches now end without a single click. The AI gave the answer. The user moved on.
 
-This created an entire industry overnight: Answer Engine Optimization (AEO).
+This created two overlapping industries overnight: **Answer Engine Optimization (AEO)** and **Generative Engine Optimization (GEO)**.
 
-## The AEO Gold Rush
+## AEO vs GEO: The Artificial Split
+
+The industry draws a line between AEO and GEO that does not hold up under examination.
+
+**AEO** targets featured snippets, People Also Ask, voice assistants, and Google's AI Overviews — anywhere a direct answer replaces a blue link. It optimizes for extraction: concise answers, schema markup, FAQ sections, headings that match query patterns.
+
+**GEO** targets generative AI platforms — ChatGPT, Claude, Perplexity, Gemini — that synthesize multi-source responses. Princeton researchers demonstrated that GEO techniques (statistics inclusion, structured formatting, topic coverage) boost AI visibility by up to 40%. GEO optimizes for citation: content depth, authority signals, entity clarity.
+
+Some argue these are the same strategy with different labels. Profound calls them "one strategy." The underlying mechanics overlap significantly: structured content, entity consistency, and authoritative sourcing improve both extraction and citation.
+
+The practical difference matters for measurement. AEO success shows up in SERP features. GEO success shows up in generative AI responses. You need to measure both. AEO Engine does — the Structural Analysis component validates extraction readiness (AEO), while Citation Validation probes generative AI responses (GEO).
+
+## The AEO/GEO Gold Rush
 
 The market responded predictably. HubSpot launched a free AEO Grader that benchmarks brand visibility across GPT-4o, Perplexity, and Gemini. Profound tracks citations across 10+ AI engines with millions of daily queries. OtterlyAI monitors brand mentions for 15,000+ marketing professionals. Finseo, Visby, Conductor, and a dozen others compete for the same budget. G2 created an entire product category for AEO tools. Enterprise pricing starts at $200/month and climbs to $500+.
 
@@ -218,21 +230,31 @@ The architecture is Next.js 15, React 19, TypeScript, Tailwind CSS, Prisma ORM w
 | HubSpot Consumer Trends | 72% of users will use AI search more; 4.4x conversion rate from AI traffic | [hubspot.com](https://blog.hubspot.com/marketing/answer-engine-optimization-trends) |
 | Semrush | AI traffic converts 4.4x better than organic; 527% YoY growth | [semrush.com](https://www.semrush.com/) |
 
-### AEO Tools Landscape
+### AEO/GEO Tools Landscape
 
 | Tool | Focus | Link |
 |------|-------|------|
 | HubSpot AEO Grader | Free brand visibility benchmark across LLMs | [hubspot.com](https://www.hubspot.com/aeo-grader) |
-| Profound | 10+ AI engine monitoring, millions of daily queries | [tryprofound.com](https://www.tryprofound.com) |
+| Profound | 10+ AI engine monitoring, AEO+GEO unified | [tryprofound.com](https://www.tryprofound.com) |
 | OtterlyAI | AI search monitoring for 15K+ professionals | [otterly.ai](https://otterly.ai) |
 | Finseo | Real-time visibility tracking + sentiment | [finseo.ai](https://www.finseo.ai) |
-| AEO Engine | Open source, self-hosted, 5 search-enabled providers, transparent scoring | [github.com](https://github.com/AnthonyAlcaraz/aeo-engine) |
+| AEO Engine | Open source, self-hosted, 5 search-enabled providers, AEO+GEO scoring | [github.com](https://github.com/AnthonyAlcaraz/aeo-engine) |
+
+### Search API Providers (Used by AEO Engine)
+
+| Provider | Search Backend | Type | Link |
+|----------|---------------|------|------|
+| OpenAI | Bing | LLM + search via `web_search_options` | [platform.openai.com](https://platform.openai.com/docs) |
+| Anthropic | Brave Search | LLM + search via `web_search_20250305` tool | [docs.anthropic.com](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool) |
+| Google | Google Search | LLM + grounding via `googleSearchRetrieval` | [ai.google.dev](https://ai.google.dev/gemini-api/docs) |
+| Perplexity | Bing + Google + own index | Search-native LLM | [docs.perplexity.ai](https://docs.perplexity.ai) |
+| Tavily | 20+ aggregated sources | AI search aggregator | [tavily.com](https://tavily.com) |
 
 ### GitHub Repositories
 
 | Repository | Purpose | Link |
 |------------|---------|------|
-| AEO Engine | Self-hosted AEO platform with 3-component scoring | [github.com/AnthonyAlcaraz/aeo-engine](https://github.com/AnthonyAlcaraz/aeo-engine) |
+| AEO Engine | Self-hosted AEO/GEO platform with 3-component scoring | [github.com/AnthonyAlcaraz/aeo-engine](https://github.com/AnthonyAlcaraz/aeo-engine) |
 
 ### Books
 
@@ -245,8 +267,10 @@ The architecture is Next.js 15, React 19, TypeScript, Tailwind CSS, Prisma ORM w
 | Article | Source | Link |
 |---------|--------|------|
 | AEO Trends in 2026 | HubSpot Blog | [hubspot.com](https://blog.hubspot.com/marketing/answer-engine-optimization-trends) |
-| AEO vs SEO: Key Differences | SEOProfy | [seoprofy.com](https://seoprofy.com/blog/aeo-vs-seo/) |
+| GEO vs AEO: What's the Difference? | Neil Patel | [neilpatel.com](https://neilpatel.com/blog/geo-vs-aeo/) |
+| AEO vs GEO: Why They're the Same Thing | Profound | [tryprofound.com](https://www.tryprofound.com/blog/aeo-vs-geo) |
 | Complete Guide to SEO vs AEO vs GEO | Ladybugz | [ladybugz.com](https://www.ladybugz.com/seo-aeo-geo-guide-2026/) |
+| AEO vs GEO: Differences and Use Cases | Wellows | [wellows.com](https://wellows.com/blog/aeo-vs-geo/) |
 | Best AEO Tracking Tools 2026 | AI Clicks | [aiclicks.io](https://aiclicks.io/blog/best-aeo-tracking-tools) |
 | AI Citation Tracking Guide 2026 | Averi AI | [averi.ai](https://www.averi.ai/how-to/how-to-track-ai-citations-and-measure-geo-success-the-2026-metrics-guide) |
 
@@ -265,11 +289,13 @@ This analysis drew from the following vault notes and external sources:
 - [HubSpot AEO Trends 2026](https://blog.hubspot.com/marketing/answer-engine-optimization-trends)
 - [Princeton GEO Research](https://arxiv.org/abs/2311.09735)
 - [HubSpot AEO Grader](https://www.hubspot.com/aeo-grader)
+- [Profound: AEO vs GEO](https://www.tryprofound.com/blog/aeo-vs-geo)
+- [Wellows: AEO vs GEO Differences](https://wellows.com/blog/aeo-vs-geo/)
+- [Ladybugz: Complete SEO vs AEO vs GEO Guide](https://www.ladybugz.com/seo-aeo-geo-guide-2026/)
 - [OtterlyAI](https://otterly.ai)
-- [Profound](https://www.tryprofound.com)
 - [Finseo](https://www.finseo.ai)
-- [SEOProfy: AEO vs SEO](https://seoprofy.com/blog/aeo-vs-seo/)
-- [Amsive: AEO Guide](https://www.amsive.com/insights/seo/answer-engine-optimization-aeo-evolving-your-seo-strategy-in-the-age-of-ai-search/)
+- [Anthropic Web Search API](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)
+- [Tavily AI Search API](https://tavily.com)
 - [AI Clicks: Best AEO Tools](https://aiclicks.io/blog/best-aeo-tracking-tools)
 
-*Total sources: 2 vault notes, 10 external references*
+*Total sources: 2 vault notes, 12 external references*

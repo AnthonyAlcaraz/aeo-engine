@@ -1,27 +1,27 @@
 AEO tools charge $300/month to probe ChatGPT and check if your brand shows up.
 I built the same thing open source for $2/month in API costs.
 
-Gartner predicts traditional search drops 25% by end of 2026. Traffic from AI answers grew 527% year-over-year. Visitors from ChatGPT and Perplexity convert 4.4x better than traditional organic search. When someone asks "what's the best CRM tool?", the AI answer now determines who gets the customer.
+Gartner predicts traditional search drops 25% by end of 2026. Traffic from AI answers grew 527% year-over-year. Visitors from ChatGPT and Perplexity convert 4.4x better than organic search.
 
-The industry responded with AEO (Answer Engine Optimization) tools. HubSpot launched an AEO Grader. Profound monitors 10+ AI engines. Otterly has 15,000 users. G2 created an AEO category. Pricing: $200 to $500/month.
+The industry split into two camps: AEO (Answer Engine Optimization) for featured snippets and voice assistants, and GEO (Generative Engine Optimization) for ChatGPT, Claude, Gemini, Perplexity. The tools treat these as separate problems. They charge $200-$500/month for each.
 
-The problem: most of these tools query raw LLMs without search enabled, scan the response for your brand name, show a dashboard. That tests what the model memorized during training. Real users interact with ChatGPT Search (Bing), Claude with web search (Brave), Gemini with grounding (Google Search), and Perplexity with live citations.
+The distinction is artificial. Both answer the same question: does AI cite your brand when someone asks about your category? AEO measures extraction readiness (schema, FAQ sections, headings). GEO measures generative citation (does ChatGPT mention you?). You need both.
 
-AEO Engine probes all 5 providers with live web search enabled:
+The bigger problem: most tools query raw LLMs without search enabled. That tests what the model memorized during training. Real users interact with ChatGPT Search (Bing), Claude with web search (Brave), Gemini with Google grounding, Perplexity with live citations.
 
-1. OpenAI Search Preview — queries Bing's index via web_search_options
-2. Claude with native web search — uses Brave Search via the web_search_20250305 tool
-3. Gemini with Google Search grounding — hits Google's production search index
-4. Perplexity Sonar — searches Bing + Google + its own crawler index
-5. Tavily — AI search aggregator pulling from 20+ web sources
+AEO Engine probes all 5 providers with live web search:
 
-Every provider searches the live internet. No raw LLM baselines. Tests what users actually see.
+1. OpenAI Search Preview — queries Bing's index
+2. Claude with native web search — Brave Search backend
+3. Gemini with Google Search grounding — Google's production index
+4. Perplexity Sonar — Bing + Google + own crawler index
+5. Tavily — AI search aggregator, 20+ web sources
 
-3-layer citation detection: URL matching (confidence 1.0), exact name matching (0.9), domain matching (0.5). 3-component scoring: Citation Validation at 50%, Competitive Gap at 30%, Structural Analysis at 20%. Competitive analysis with SWOT profiles. Content optimization from real probe data.
+3-component scoring covers both AEO and GEO: Citation Validation (50%) tests GEO — does the AI actually cite you? Structural Analysis (20%) tests AEO — is your content formatted for extraction? Competitive Gap (30%) benchmarks both against competitors.
 
 Total cost: ~$0.06 per probe across 5 providers. Ten probes daily under $20/month.
 
-The deeper insight: AI engines find brands through search indexes (Bing, Google, Brave), not training data. Entity resolution, schema markup, and consistent naming across sources determine whether you get cited. Structured knowledge wins in agent systems. Structured knowledge wins in AI search.
+AI engines find brands through search indexes (Bing, Google, Brave), not training data. Entity resolution, schema markup, and consistent naming determine whether you get cited. Structured knowledge wins in both AEO and GEO.
 
 The repo: github.com/AnthonyAlcaraz/aeo-engine
 
