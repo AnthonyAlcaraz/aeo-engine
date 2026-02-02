@@ -58,6 +58,84 @@ Run all probes at once. Schedule with cron expressions for automated daily or we
 
 ---
 
+## Agentic Feedback Loop
+
+AEO Engine is not a dashboard that shows static metrics. It is an agentic system that closes the loop between measurement and action.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    AGENTIC FEEDBACK LOOP                         │
+│                                                                  │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐ │
+│   │  PROBE   │───→│  SCORE   │───→│ OPTIMIZE │───→│ RE-PROBE │ │
+│   │          │    │          │    │          │    │          │ │
+│   │ 5 search │    │ 3-comp   │    │ LLM      │    │ Validate │ │
+│   │ providers│    │ scoring  │    │ rewriter │    │ improve  │ │
+│   └──────────┘    └──────────┘    └──────────┘    └──────────┘ │
+│        ↑                                               │        │
+│        └───────────────────────────────────────────────┘        │
+│                     Continuous Loop                              │
+│                                                                  │
+│   ┌──────────────────────────────────────────────────────────┐  │
+│   │ ALERT ENGINE: monitors citation changes between cycles   │  │
+│   └──────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### How the Loop Works
+
+**Step 1: Probe** — Execute queries across 5 search-enabled providers. Each probe creates a `CitationRun` with per-provider `CitationResult` records: cited (bool), citation type, sentiment, list position, competitor mentions, confidence score, full response text.
+
+**Step 2: Score** — The 3-component scorer runs autonomously:
+- **Structural Analysis** (20%) inspects the content's markdown structure
+- **Citation Validation** (50%) extracts probe queries from the content's own headings and FAQ sections, sends them to 2-3 providers, and checks if the content gets cited — a **probe-within-a-probe** that validates citability against the content's own topic claims
+- **Competitive Gap** (30%) compares your citation rate to competitors across historical probe data
+
+**Step 3: Optimize** — The optimizer receives:
+1. Queries where your brand **was** cited (patterns to preserve)
+2. Queries where your brand **was not** cited (gaps to fix)
+3. Competitor citation patterns (what works for them)
+
+It rewrites sections to maximize citation likelihood, returns before/after diffs, and estimates score improvement.
+
+**Step 4: Re-Probe** — New probes run against the optimized content. The system stores historical `CitationRun` records, enabling before/after comparison. The alert engine fires on citation gained, citation lost, competitor surge, or sentiment shift.
+
+**Step 5: Repeat** — Schedule with cron for automated daily or weekly cycles. The system continuously optimizes toward higher citation rates.
+
+### Three Autonomous Agentic Loops
+
+The system contains three nested autonomous loops:
+
+1. **Citation Validation Loop** — During scoring, auto-extracts 5 queries from content, probes 3 providers, analyzes responses. Runs without user input.
+2. **Competitive Analysis Loop** — For each probe query × each provider × each competitor: queries, detects citations, builds SWOT profiles. Parallelized.
+3. **Batch Execution Loop** — Runs all active probes, respects per-provider rate limits, logs API usage, triggers alert checks post-execution. Schedulable via cron.
+
+---
+
+## Why a Knowledge Graph Would Improve This
+
+The current system stores citation data in relational tables. This works for basic probing but misses structural relationships that a knowledge graph would capture.
+
+### What a Graph-Based Architecture Enables
+
+**Entity Resolution Across Probes** — When ChatGPT mentions "Salesforce CRM" and Perplexity mentions "Salesforce Sales Cloud", the current system treats these as different strings. A knowledge graph would resolve both to the same entity node, connecting: `Brand → hasProduct → CRM → isAlsoKnownAs → Sales Cloud`. Citation counts become accurate across naming variants.
+
+**Relationship Traversal for Gap Analysis** — Instead of flat competitor comparison, a graph captures: `YourBrand → competesWith → CompetitorA → citedFor → "enterprise CRM" → byProvider → Perplexity`. You can traverse the graph to find: "For which category-provider pairs do competitors get cited but we don't?" This is a graph query, not a SQL join.
+
+**Citation Path Analysis** — Track how a citation propagates: `Content → mentionedIn → CitationResult → fromProvider → OpenAI → withSearchBackend → Bing → indexedFrom → yourDomain`. This reveals which search backends surface your content and which don't — something the flat relational model cannot represent.
+
+**Temporal Knowledge Graph** — Each probe run adds timestamped edges. Query: "How has our entity's citation pattern changed over 30 days across providers?" The graph stores the trajectory as connected temporal nodes, not aggregated dashboard metrics.
+
+**Schema.org Alignment** — Your content's JSON-LD schema markup (Organization, Product, FAQ) maps directly to graph ontology. A knowledge graph can validate: "Does our content's entity structure match what AI engines expect?" by comparing your schema graph to the entity patterns that earn citations.
+
+### The Architectural Parallel
+
+This is the same principle that drives knowledge graph superiority in agent memory systems. Vector search finds semantically similar chunks. Knowledge graphs find structurally connected entities. When an agent traverses `customer → product → feature → documentation`, vectors fail because they index similarity, not structure.
+
+When an AI engine decides which brand to cite, it performs entity resolution and relationship traversal — the same operations knowledge graphs are built for. The brands with clear entity structures, consistent schema markup, and interconnected content are the ones that get cited. AEO Engine measures this outcome. A graph-based AEO engine would model the underlying structure that produces it.
+
+---
+
 ## Quick Start
 
 ```bash

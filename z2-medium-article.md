@@ -125,6 +125,32 @@ This is where the system closes the loop. The optimizer takes:
 
 It rewrites sections to maximize citation likelihood, returns a detailed change log with before/after diffs, labels each change (rewrite, add, restructure, schema), and estimates the score improvement. You can then re-probe to validate whether the changes actually improved citations.
 
+### The Agentic Feedback Loop
+
+This is what separates AEO Engine from a dashboard. Most AEO/GEO tools stop at step 1: probe and display. AEO Engine runs a closed feedback loop:
+
+```
+PROBE → SCORE → OPTIMIZE → RE-PROBE → (repeat)
+  ↑                                        │
+  └────────────────────────────────────────┘
+```
+
+**Probe** creates `CitationRun` records with per-provider `CitationResult` data: cited (bool), citation type, sentiment, position, competitor mentions, confidence, full response text.
+
+**Score** runs three autonomous sub-processes. Citation Validation auto-extracts 5 queries from your content's headings and FAQ sections, sends them to 2-3 providers, and checks if the AI cites you — a probe-within-a-probe that validates citability without user input. Competitive Gap compares your citation rate to every configured competitor across all historical runs.
+
+**Optimize** receives the specific queries where you were cited (patterns to preserve) and queries where you were not cited (gaps to close), plus competitor citation patterns. The LLM rewrites sections targeting the gaps.
+
+**Re-Probe** validates whether the optimization worked. New `CitationRun` records enable before/after comparison. The alert engine fires on citation gained, citation lost, competitor surge, or sentiment shift.
+
+**Schedule** via cron for autonomous daily or weekly cycles. The system continuously optimizes toward higher citation rates without manual intervention.
+
+Three nested agentic loops run autonomously:
+
+1. **Citation Validation Loop** — During scoring, auto-extracts queries from content, probes 3 providers, analyzes responses. No user input required.
+2. **Competitive Analysis Loop** — For each probe query × each provider × each competitor: queries, detects citations, builds SWOT profiles. Fully parallelized.
+3. **Batch Execution Loop** — Runs all active probes across all providers, respects per-provider rate limits (100K tokens/min, $5/day cap), logs API usage, triggers alert checks post-execution.
+
 ### Cost Structure
 
 All 5 providers search the live web:
@@ -170,6 +196,22 @@ When an AI engine decides which brands to cite in a response, it is performing a
 Brands with clear entity structures get cited. Their name, domain, products, and categories are consistent across every source the model has seen. Their content is structured so that the relationship between the brand and the category is unambiguous.
 
 Brands with keyword-stuffed content get ignored. The entity signals are muddled. The relationship between brand and category is diluted across competing signals.
+
+### Why a Knowledge Graph Would Improve AEO Engine
+
+The current system stores citation data in relational tables (Prisma + SQLite). This works for basic probing and scoring but misses structural relationships that a graph would capture.
+
+**Entity Resolution Across Probes.** When ChatGPT mentions "Salesforce CRM" and Perplexity mentions "Salesforce Sales Cloud", the relational DB treats these as different strings. A knowledge graph would resolve both to the same entity node: `Brand → hasProduct → CRM → isAlsoKnownAs → Sales Cloud`. Citation counts become accurate across naming variants.
+
+**Citation Path Analysis.** Track how citations propagate: `Content → mentionedIn → CitationResult → fromProvider → OpenAI → withSearchBackend → Bing → indexedFrom → yourDomain`. This reveals which search backends surface your content and which don't — a graph traversal query, not a SQL join.
+
+**Competitive Relationship Mapping.** Instead of flat competitor tables, model: `YourBrand → competesWith → CompetitorA → citedFor → "enterprise CRM" → byProvider → Perplexity`. Traverse the graph to find category-provider pairs where competitors get cited and you don't.
+
+**Temporal Knowledge Graph.** Each probe run adds timestamped edges. Query: "How has our entity's citation pattern changed over 30 days across providers?" The graph stores the trajectory as connected temporal nodes, not aggregated dashboard metrics.
+
+**Schema.org Alignment.** Your content's JSON-LD markup (Organization, Product, FAQ) maps directly to graph ontology. A knowledge graph can validate: "Does our content's entity structure match what AI engines expect?" by comparing your schema graph to the entity patterns that earn citations.
+
+### The Architectural Parallel
 
 This is the same principle that drives knowledge graph superiority over vector databases in agent systems. Vector search finds semantically similar chunks. Knowledge graphs find structurally connected entities. When an agent needs to traverse relationships (customer → product → feature → documentation), vectors fail because they index similarity, not structure. When an AI engine needs to identify the right brand for a category, keyword density fails because it measures frequency, not entity clarity.
 
