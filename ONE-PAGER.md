@@ -17,7 +17,7 @@ Define Brand + Competitors
   Create Probes ----------- "What are the best CRM tools?"
         |                   "Compare top sales platforms"
         v
-  Run Against LLMs -------- GPT-4o-mini Search, Claude Haiku, Gemini Flash + Google Search, Perplexity Sonar
+  Run Against LLMs -------- GPT-4o Search (Bing), Claude + Web Search (Brave), Gemini + Grounding (Google), Perplexity Sonar (multi-index), Tavily (aggregated web)
         |
         v
   Detect Citations -------- Cited? Position? Sentiment? Competitors mentioned?
@@ -54,7 +54,7 @@ Citation Validation dominates because it answers the only question that matters:
 
 ## Core Capabilities
 
-**Citation Tracking** -- Query 4 LLM providers with probe templates (best-of, top-list, comparison, how-to, recommendation, alternative). 3-layer detection analyzes responses for brand mentions, URLs, sentiment, list position, and competitor presence. Each result gets a confidence score (0.5-1.0).
+**Citation Tracking** -- Query 5 search-enabled providers with probe templates (best-of, top-list, comparison, how-to, recommendation, alternative). All providers search the live web: OpenAI (Bing), Anthropic (Brave), Google (Google Search), Perplexity (multi-index), Tavily (20+ sources). 3-layer detection analyzes responses for brand mentions, URLs, sentiment, list position, and competitor presence. Each result gets a confidence score (0.5-1.0).
 
 **Real AEO Scoring** -- 3-component score that probes live LLMs to validate citation likelihood. Extracts queries from your content's headings and FAQ sections, tests them against providers, and factors in competitive positioning. Returns prioritized recommendations.
 
@@ -83,13 +83,13 @@ Citation Validation dominates because it answers the only question that matters:
 | Pages | 9 pages including competitive analysis, content detail, settings, onboarding |
 | Lib Modules | 13 modules: LLM adapters, citation detection, competitive analysis, content generation, optimization, scoring, monitoring |
 | Database | Prisma + SQLite (swappable to Postgres) |
-| LLM Integration | OpenAI, Anthropic, Google Generative AI, Perplexity |
+| LLM Integration | OpenAI (Bing), Anthropic (Brave), Google (Google Search), Perplexity (multi-index), Tavily (aggregated web) — all search-enabled |
 | Cost Control | Per-provider rate limiter (100K tokens/min, $5/day cap, configurable) |
 | Caching | SHA-256 keyed, 24h TTL for probes, 7d for content |
 
 ## Cost Profile
 
-Probing uses cheap models by default. A full probe across 4 providers costs roughly $0.002-0.005. Running 10 probes daily across 4 providers costs under $2/month. Content generation and optimization with stronger models (GPT-4o, Claude Sonnet) costs $0.05-0.15 per article.
+All 5 providers search the live web. A full probe across 5 providers costs approximately $0.06 (including search fees). Running 10 probes daily costs under $20/month. Content generation and optimization with stronger models (GPT-4o, Claude Sonnet) costs $0.05-0.15 per article.
 
 ## Quick Start
 

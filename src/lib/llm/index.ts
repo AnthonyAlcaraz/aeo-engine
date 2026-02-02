@@ -2,8 +2,9 @@ import { queryOpenAI } from "./openai-adapter";
 import { queryAnthropic } from "./anthropic-adapter";
 import { queryGoogle } from "./google-adapter";
 import { queryPerplexity } from "./perplexity-adapter";
+import { queryTavily } from "./tavily-adapter";
 
-export type LLMProvider = "openai" | "anthropic" | "google" | "perplexity";
+export type LLMProvider = "openai" | "anthropic" | "google" | "perplexity" | "tavily";
 
 export interface LLMRequest {
   provider: LLMProvider;
@@ -29,6 +30,7 @@ export const DEFAULT_MODELS: Record<LLMProvider, string> = {
   anthropic: "claude-3-5-haiku-latest",
   google: "gemini-2.0-flash",
   perplexity: "sonar",
+  tavily: "tavily-search",
 };
 
 export const COST_PER_1K_TOKENS: Record<
@@ -43,10 +45,16 @@ export const COST_PER_1K_TOKENS: Record<
   sonar: { input: 0.001, output: 0.001 },
 };
 
+export const COST_PER_QUERY: Record<string, number> = {
+  "tavily-search": 0.008,
+  "tavily-advanced": 0.016,
+};
+
 // Per-call costs for search-enabled models (in addition to token costs)
 export const SEARCH_CALL_COST: Record<string, number> = {
   "gpt-4o-mini-search-preview": 0.025,
   "gpt-4o-search-preview": 0.03,
+  "anthropic-web-search": 0.01,
 };
 
 export function calculateCost(
@@ -64,10 +72,11 @@ const PROVIDER_API_KEY_MAP: Record<LLMProvider, string> = {
   anthropic: "ANTHROPIC_API_KEY",
   google: "GOOGLE_API_KEY",
   perplexity: "PERPLEXITY_API_KEY",
+  tavily: "TAVILY_API_KEY",
 };
 
 export function getEnabledProviders(): LLMProvider[] {
-  const providers: LLMProvider[] = ["openai", "anthropic", "google", "perplexity"];
+  const providers: LLMProvider[] = ["openai", "anthropic", "google", "perplexity", "tavily"];
   return providers.filter(
     (provider) => !!process.env[PROVIDER_API_KEY_MAP[provider]]
   );
@@ -83,6 +92,8 @@ export async function queryLLM(request: LLMRequest): Promise<LLMResponse> {
       return queryGoogle(request);
     case "perplexity":
       return queryPerplexity(request);
+    case "tavily":
+      return queryTavily(request);
     default: {
       const exhaustiveCheck: never = request.provider;
       throw new Error(`Unknown provider: ${exhaustiveCheck}`);

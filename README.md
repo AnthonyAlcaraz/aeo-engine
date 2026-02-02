@@ -6,8 +6,8 @@ AI engines (ChatGPT, Claude, Gemini, Perplexity) are replacing traditional searc
 
 ## Features
 
-### Citation Tracking (Search-Enabled)
-Send probe queries to 4 LLM providers with **live web search enabled** — OpenAI Search Preview, Gemini with Google Search grounding, Perplexity Sonar with built-in search, and Claude as a raw LLM baseline. This tests what users actually see, not just what models memorized during training. Detect whether your brand appears in responses with 3-layer detection (URL matching, name matching, domain matching). Measures citation type, sentiment, list position, confidence score, and competitor mentions.
+### Citation Tracking (All Providers Search-Enabled)
+Send probe queries to 5 providers — **all with live web search**. OpenAI Search Preview (Bing), Claude with native web search (Brave), Gemini with Google Search grounding, Perplexity Sonar (multi-index), and Tavily (AI search aggregator). Every provider searches the live web, testing what users actually see — not what models memorized during training. Detect whether your brand appears in responses with 3-layer detection (URL matching, name matching, domain matching). Measures citation type, sentiment, list position, confidence score, and competitor mentions.
 
 ### Real AEO Scoring
 3-component scoring system that validates whether AI engines actually cite your content — not just whether it follows SEO formatting conventions.
@@ -65,6 +65,7 @@ OPENAI_API_KEY="sk-..."
 ANTHROPIC_API_KEY="sk-ant-..."
 GOOGLE_AI_API_KEY="AI..."
 PERPLEXITY_API_KEY="pplx-..."
+TAVILY_API_KEY="tvly-..."
 ```
 
 Initialize the database and start:
@@ -87,7 +88,7 @@ Define Brand + Competitors
   Create Probes ----------- "What are the best CRM tools?"
         |                   "Compare top sales platforms"
         v
-  Run Against LLMs -------- GPT-4o-mini, Claude Haiku, Gemini Flash, Perplexity Sonar
+  Run Against LLMs -------- GPT-4o Search, Claude + Web Search, Gemini + Grounding, Perplexity Sonar, Tavily
         |
         v
   Detect Citations -------- Cited? Position? Sentiment? Competitors mentioned?
@@ -183,7 +184,7 @@ src/
 │   ├── layout/                        # Sidebar + app shell
 │   └── ui/                            # Button, Card, Input, Dialog, etc.
 ├── lib/
-│   ├── llm/                           # Unified LLM client + 4 provider adapters
+│   ├── llm/                           # Unified LLM client + 5 provider adapters (all search-enabled)
 │   ├── citation/                      # 3-layer detection + prompt templates + competitive engine
 │   ├── content/                       # 3-stage generation + optimization + schema markup
 │   ├── scoring/                       # 3-component AEO scorer + query extractor
@@ -204,7 +205,7 @@ src/
 | Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS 4, Recharts, @dnd-kit |
 | API | Next.js API routes with Zod validation |
 | Database | Prisma ORM + SQLite (swappable to PostgreSQL) |
-| LLM Integration | OpenAI, Anthropic, Google Generative AI, Perplexity |
+| LLM Integration | OpenAI (Bing search), Anthropic (Brave search), Google (Google Search grounding), Perplexity (multi-index), Tavily (AI search aggregator) |
 | Cost Control | Per-provider rate limiter (100K tokens/min, $5/day cap, configurable) |
 | Caching | SHA-256 keyed, 24h TTL for probes, 7d for content |
 
@@ -212,18 +213,43 @@ src/
 
 ## Default Models
 
-Probing uses search-enabled models to match how real users interact with AI engines:
+**Every provider searches the live web.** No raw LLM baselines — AEO Engine tests what users actually see.
 
-| Provider | Model | Search Mode | Input $/1K | Output $/1K |
-|----------|-------|------------|-----------|------------|
-| OpenAI | gpt-4o-mini-search-preview | Web search via `web_search_options` | $0.00015 + $0.025/call | $0.0006 |
-| Anthropic | claude-3-5-haiku-latest | Raw LLM (no search API available) | $0.0008 | $0.004 |
-| Google | gemini-2.0-flash | Google Search grounding | $0.0001 | $0.0004 |
-| Perplexity | sonar | Built-in web search | $0.001 | $0.001 |
+| Provider | Model | Search Backend | Cost per Probe |
+|----------|-------|---------------|---------------|
+| OpenAI | gpt-4o-mini-search-preview | Bing via `web_search_options` | ~$0.026 (tokens + $0.025/call) |
+| Anthropic | claude-3-5-haiku-latest | Brave via `web_search_20250305` tool | ~$0.015 (tokens + $0.01/search) |
+| Google | gemini-2.0-flash | Google Search grounding | ~$0.001 (tokens only) |
+| Perplexity | sonar | Multi-index (Bing + Google + own) | ~$0.002 (tokens only) |
+| Tavily | tavily-search | AI search aggregator (20+ sources) | $0.016/query (flat rate) |
 
-**Why search-enabled probing matters:** Users don't query raw LLMs. They ask ChatGPT with search on, Gemini with grounding, Perplexity with citations. Testing raw model responses tells you what the model memorized during training. Testing search-enabled responses tells you what users actually see when they ask about your brand today. Three of four providers (OpenAI, Google, Perplexity) probe with live web results. Anthropic does not currently offer a search-augmented API.
+### How Each Provider Searches
 
-A full probe across 4 providers costs approximately $0.03-0.05 (including search call fees). Running 10 probes daily costs under $15/month. Content generation with stronger models (GPT-4o, Claude Sonnet) costs $0.05-0.15 per article.
+- **OpenAI:** Uses Bing's search index via `web_search_options` parameter. OAI-SearchBot fetches full page content from top results.
+- **Anthropic:** Native `web_search_20250305` server-side tool backed by Brave Search. Claude chains multiple searches autonomously and returns inline citations.
+- **Google:** `googleSearchRetrieval` grounding with dynamic threshold — uses Google's production search index and Knowledge Graph.
+- **Perplexity:** Multi-source retrieval from Bing, Google, and its own crawler index (PerplexityBot). Deduplicates and re-ranks across all sources.
+- **Tavily:** AI-native search aggregator that scrapes and filters from 20+ web sources. Returns scored results with optional full page content.
+
+### Why All-Search Probing Matters
+
+Users don't query raw LLMs. They ask ChatGPT with search on, Claude with web access, Gemini with grounding, Perplexity with citations. Testing raw model responses tells you what the model memorized during training. Testing search-enabled responses tells you what users actually see when they ask about your brand today. AEO Engine probes all 5 providers with live web search — covering Bing (OpenAI), Brave (Anthropic), Google (Gemini), multi-index (Perplexity), and aggregated web (Tavily).
+
+A full probe across 5 providers costs approximately $0.06. Running 10 probes daily costs under $20/month. Content generation with stronger models (GPT-4o, Claude Sonnet) costs $0.05-0.15 per article.
+
+### How AI Engines Find Information to Cite
+
+Understanding the retrieval pipeline explains why structured content wins:
+
+```
+User Query → Query Reformulation → Search Index Lookup → Re-ranking → Content Fetching → Context Assembly → LLM Generation with Citations
+```
+
+1. **Crawlability:** AI crawlers (GPTBot, PerplexityBot, Google-Extended) must access your pages. Block them in robots.txt and you're invisible.
+2. **Indexation:** Your content must rank in the search indexes (Bing, Google) that AI engines query. Domain authority, topical depth, and backlinks still matter.
+3. **Entity Resolution:** AI systems recognize brands as entities. Schema.org markup, Wikipedia presence, consistent naming across sources — these make your brand unambiguous.
+4. **Content Structure:** Direct answers, question-matching headers, specific data points. The LLM cites the source that most directly answers the query.
+5. **Multi-Engine Presence:** ChatGPT uses Bing, Gemini uses Google, Perplexity uses both + its own index. You need to rank across all search backends.
 
 ---
 
@@ -296,10 +322,12 @@ npx prisma studio    # Visual database editor
 
 ## Roadmap
 
+- Additional search aggregators (Exa neural search, Linkup, Brave Search API)
 - WordPress publishing integration
 - Historical comparison (before/after content publication impact on citation rates)
 - Multi-language probe support
 - Provider-specific optimization strategies (what works for GPT vs. Claude vs. Gemini)
+- Search backend analytics (which search index surfaces your content most)
 
 ---
 

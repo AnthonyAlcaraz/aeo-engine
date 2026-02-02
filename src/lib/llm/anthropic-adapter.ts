@@ -4,6 +4,7 @@ import {
   type LLMResponse,
   DEFAULT_MODELS,
   calculateCost,
+  SEARCH_CALL_COST,
 } from "./index";
 
 export async function queryAnthropic(
@@ -21,28 +22,53 @@ export async function queryAnthropic(
 
   const start = Date.now();
 
-  const response = await client.messages.create({
+  // Enable native web search tool so Claude retrieves live web results
+  // This mirrors how real users interact with Claude (search enabled by default)
+  // Uses Brave Search as backend, returns inline citations
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createParams: any = {
     model,
     max_tokens: request.maxTokens ?? 1024,
-    temperature: request.temperature ?? 0.7,
     system: request.systemPrompt ?? "",
     messages: [{ role: "user", content: request.prompt }],
-  });
+    tools: [
+      {
+        type: "web_search_20250305",
+        name: "web_search",
+        max_uses: 3,
+      },
+    ],
+  };
+
+  const response = await client.messages.create(createParams);
 
   const latencyMs = Date.now() - start;
 
   const tokensIn = response.usage.input_tokens;
   const tokensOut = response.usage.output_tokens;
 
-  const textBlock = response.content.find((block) => block.type === "text");
-  const text = textBlock && textBlock.type === "text" ? textBlock.text : "";
+  // Extract text from all text blocks (search responses may have multiple)
+  const textBlocks = response.content.filter(
+    (block) => block.type === "text"
+  );
+  const text = textBlocks
+    .map((block) => (block.type === "text" ? block.text : ""))
+    .join("\n");
+
+  // Count search requests for cost calculation
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const usage = response.usage as any;
+  const searchRequests =
+    usage?.server_tool_use?.web_search_requests ?? 0;
+  const searchCost = searchRequests * (SEARCH_CALL_COST["anthropic-web-search"] ?? 0);
+  const tokenCost = calculateCost(model, tokensIn, tokensOut);
 
   return {
     text,
     tokensIn,
     tokensOut,
     latencyMs,
-    cost: calculateCost(model, tokensIn, tokensOut),
+    cost: tokenCost + searchCost,
     model,
     provider: "anthropic",
   };
