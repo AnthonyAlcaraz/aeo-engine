@@ -17,12 +17,24 @@ export async function queryGoogle(request: LLMRequest): Promise<LLMResponse> {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = request.model ?? DEFAULT_MODELS.google;
 
+  // Enable Google Search grounding so Gemini retrieves live web results
+  // This mirrors how real users interact with Gemini (search grounding active)
   const generativeModel = genAI.getGenerativeModel({
     model,
     generationConfig: {
       temperature: request.temperature ?? 0.7,
       maxOutputTokens: request.maxTokens,
     },
+    tools: [
+      {
+        googleSearchRetrieval: {
+          dynamicRetrievalConfig: {
+            mode: "MODE_DYNAMIC",
+            dynamicThreshold: 0.3,
+          },
+        },
+      } as never,
+    ],
     systemInstruction: request.systemPrompt
       ? { role: "system", parts: [{ text: request.systemPrompt }] }
       : undefined,

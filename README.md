@@ -6,8 +6,8 @@ AI engines (ChatGPT, Claude, Gemini, Perplexity) are replacing traditional searc
 
 ## Features
 
-### Citation Tracking
-Send probe queries to 4 LLM providers simultaneously. Detect whether your brand appears in responses with 3-layer detection (URL matching, name matching, domain matching). Measures citation type, sentiment, list position, confidence score, and competitor mentions.
+### Citation Tracking (Search-Enabled)
+Send probe queries to 4 LLM providers with **live web search enabled** — OpenAI Search Preview, Gemini with Google Search grounding, Perplexity Sonar with built-in search, and Claude as a raw LLM baseline. This tests what users actually see, not just what models memorized during training. Detect whether your brand appears in responses with 3-layer detection (URL matching, name matching, domain matching). Measures citation type, sentiment, list position, confidence score, and competitor mentions.
 
 ### Real AEO Scoring
 3-component scoring system that validates whether AI engines actually cite your content — not just whether it follows SEO formatting conventions.
@@ -212,16 +212,18 @@ src/
 
 ## Default Models
 
-Probing uses cheap, fast models to keep costs low:
+Probing uses search-enabled models to match how real users interact with AI engines:
 
-| Provider | Model | Input $/1K | Output $/1K |
-|----------|-------|-----------|------------|
-| OpenAI | gpt-4o-mini | $0.00015 | $0.0006 |
-| Anthropic | claude-3-5-haiku-latest | $0.0008 | $0.004 |
-| Google | gemini-2.0-flash | $0.0001 | $0.0004 |
-| Perplexity | sonar | $0.001 | $0.001 |
+| Provider | Model | Search Mode | Input $/1K | Output $/1K |
+|----------|-------|------------|-----------|------------|
+| OpenAI | gpt-4o-mini-search-preview | Web search via `web_search_options` | $0.00015 + $0.025/call | $0.0006 |
+| Anthropic | claude-3-5-haiku-latest | Raw LLM (no search API available) | $0.0008 | $0.004 |
+| Google | gemini-2.0-flash | Google Search grounding | $0.0001 | $0.0004 |
+| Perplexity | sonar | Built-in web search | $0.001 | $0.001 |
 
-A full probe across 4 providers costs ~$0.002-0.005. Running 10 probes daily costs under $2/month. Content generation with stronger models (GPT-4o, Claude Sonnet) costs $0.05-0.15 per article.
+**Why search-enabled probing matters:** Users don't query raw LLMs. They ask ChatGPT with search on, Gemini with grounding, Perplexity with citations. Testing raw model responses tells you what the model memorized during training. Testing search-enabled responses tells you what users actually see when they ask about your brand today. Three of four providers (OpenAI, Google, Perplexity) probe with live web results. Anthropic does not currently offer a search-augmented API.
+
+A full probe across 4 providers costs approximately $0.03-0.05 (including search call fees). Running 10 probes daily costs under $15/month. Content generation with stronger models (GPT-4o, Claude Sonnet) costs $0.05-0.15 per article.
 
 ---
 

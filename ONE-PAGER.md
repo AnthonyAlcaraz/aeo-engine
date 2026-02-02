@@ -17,7 +17,7 @@ Define Brand + Competitors
   Create Probes ----------- "What are the best CRM tools?"
         |                   "Compare top sales platforms"
         v
-  Run Against LLMs -------- GPT-4o-mini, Claude Haiku, Gemini Flash, Perplexity Sonar
+  Run Against LLMs -------- GPT-4o-mini Search, Claude Haiku, Gemini Flash + Google Search, Perplexity Sonar
         |
         v
   Detect Citations -------- Cited? Position? Sentiment? Competitors mentioned?

@@ -25,7 +25,7 @@ export interface LLMResponse {
 }
 
 export const DEFAULT_MODELS: Record<LLMProvider, string> = {
-  openai: "gpt-4o-mini",
+  openai: "gpt-4o-mini-search-preview",
   anthropic: "claude-3-5-haiku-latest",
   google: "gemini-2.0-flash",
   perplexity: "sonar",
@@ -36,9 +36,17 @@ export const COST_PER_1K_TOKENS: Record<
   { input: number; output: number }
 > = {
   "gpt-4o-mini": { input: 0.00015, output: 0.0006 },
+  "gpt-4o-mini-search-preview": { input: 0.00015, output: 0.0006 },
+  "gpt-4o-search-preview": { input: 0.0025, output: 0.01 },
   "claude-3-5-haiku-latest": { input: 0.0008, output: 0.004 },
   "gemini-2.0-flash": { input: 0.0001, output: 0.0004 },
   sonar: { input: 0.001, output: 0.001 },
+};
+
+// Per-call costs for search-enabled models (in addition to token costs)
+export const SEARCH_CALL_COST: Record<string, number> = {
+  "gpt-4o-mini-search-preview": 0.025,
+  "gpt-4o-search-preview": 0.03,
 };
 
 export function calculateCost(
