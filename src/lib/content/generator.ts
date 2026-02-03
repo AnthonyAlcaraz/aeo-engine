@@ -7,6 +7,12 @@ import {
   extractFAQFromMarkdown,
   extractStepsFromMarkdown,
 } from "./schema-markup";
+import {
+  selectTemplate,
+  buildTemplatedPrompt,
+  getTemplate,
+  type TemplateType,
+} from "./templates";
 
 export interface ContentRequest {
   brandName: string;
@@ -15,6 +21,9 @@ export interface ContentRequest {
   contentType: "article" | "faq" | "how-to" | "comparison";
   topic: string;
   targetLength?: number;
+  competitors?: string[];           // For comparison hijack template
+  useAuthorityTemplate?: boolean;   // Force use of authority hijack templates
+  templateOverride?: TemplateType;  // Explicitly choose template
 }
 
 export interface GeneratedContent {
@@ -328,5 +337,58 @@ export async function generateContent(
     aeoScore,
     tokensUsed: totalTokens,
     cost: totalCost,
+  };
+}
+
+/**
+ * Generate content using Authority Hijack templates.
+ * Optimized for maximum AI citation probability.
+ */
+export async function generateAuthorityContent(
+  request: ContentRequest,
+  provider: LLMProvider = "openai"
+): Promise<GeneratedContent> {
+  const model = getModelForProvider(provider);
+
+  // Select template based on content type and request
+  const templateType =
+    request.templateOverride ||
+    selectTemplate(request.contentType, request.topic, request.competitors || []);
+
+  const template = getTemplate(templateType);
+  const { systemPrompt, userPrompt } = buildTemplatedPrompt(
+    template,
+    request.topic,
+    request.brandName,
+    request.keywords,
+    request.competitors || []
+  );
+
+  // Single-stage generation with authority template
+  const response = await queryLLM({
+    provider,
+    model,
+    systemPrompt,
+    prompt: userPrompt,
+    maxTokens: 4000,
+  });
+
+  const draft = response.text;
+  const totalTokens = response.tokensIn + response.tokensOut;
+  const totalCost = response.cost;
+
+  // Generate schema markup
+  const schema = await stageSchema(request, draft, provider, model);
+
+  const title = extractTitle(draft);
+  const aeoScore = calculateAEOScore(draft, schema.text, request);
+
+  return {
+    title,
+    body: draft,
+    schemaMarkup: schema.text,
+    aeoScore: aeoScore + 10, // Authority templates get a bonus for structure
+    tokensUsed: totalTokens + schema.tokensUsed,
+    cost: totalCost + schema.cost,
   };
 }

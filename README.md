@@ -356,6 +356,122 @@ User Query → Query Reformulation → Search Index Lookup → Re-ranking → Co
 
 ---
 
+## Authority Hijack Templates (Be The Answer Framework)
+
+Content structures optimized for AI citation. Based on reverse-engineering how LLMs format their own explanations.
+
+### Template Types
+
+| Template | Use When | Key Feature |
+|----------|----------|-------------|
+| `answer-first` | General content, how-to guides | Mirrors LLM explanation format |
+| `comparison-hijack` | Brand vs competitor content | Balanced positioning for AI trust |
+| `use-case-authority` | Audience-specific recommendations | Targets "What do X use?" queries |
+| `faq-authority` | FAQ pages | Self-contained Q&A pairs for citation |
+
+### Usage
+
+```typescript
+import { generateAuthorityContent } from "@/lib/content/generator";
+
+const content = await generateAuthorityContent({
+  brandName: "Acme CRM",
+  brandDomain: "acme.com",
+  keywords: ["crm", "sales automation"],
+  contentType: "comparison",
+  topic: "CRM tools for startups",
+  competitors: ["Salesforce", "HubSpot"],
+});
+```
+
+---
+
+## Validation Probe Patterns
+
+Expanded probe categories targeting the question structures that lead to AI citations.
+
+### Standard Probes
+- `best-of` — "What are the best [category]?"
+- `top-list` — "What are the top 10 [category]?"
+- `comparison` — "Compare the leading [category]"
+- `how-to` — "How do I choose the right [category]?"
+- `recommendation` — "I need a recommendation for [category]"
+- `alternative` — "What are the best alternatives for [brand]?"
+
+### Validation Probes (Be The Answer Framework)
+- `difference` — "What's the difference between [A] and [B]?"
+- `company-solve` — "How do companies solve [problem]?"
+- `best-solution` — "What's the best solution for [problem]?"
+- `use-case` — "What [category] do [audience] use and why?"
+- `when-to-use` — "When should I use [A] vs [B]?"
+- `pros-cons` — "What are the pros and cons of [brand]?"
+- `beginner` — "What [category] is best for beginners?"
+- `enterprise` — "What [category] do enterprise companies use?"
+- `budget` — "What's the best [category] on a budget?"
+- `specific-need` — "What [category] is best for [requirement]?"
+
+### Generate Full Probe Set
+
+```bash
+curl -X POST http://localhost:3000/api/probes/generate \
+  -H "Content-Type: application/json" \
+  -d '{"brandId": "...", "category": "CRM tools", "saveToDatabase": true}'
+```
+
+---
+
+## Landing Page Continuity Scoring
+
+Scores how well your landing page "continues the answer" the AI started. When AI cites your brand, users land with specific expectations. Continuity scoring validates alignment.
+
+### Three Scoring Dimensions
+
+1. **Claim Alignment (40%)** — Does the page support claims the AI made?
+2. **Message Continuity (35%)** — Does the value proposition match?
+3. **Intent Match (25%)** — Does the CTA serve the user's original question?
+
+### API Usage
+
+```bash
+curl -X POST http://localhost:3000/api/continuity \
+  -H "Content-Type: application/json" \
+  -d '{
+    "aiResponse": "Acme CRM is the top choice for startups because...",
+    "landingPageContent": "# Welcome to Acme CRM...",
+    "originalQuery": "What CRM is best for startups?",
+    "brandName": "Acme CRM"
+  }'
+```
+
+---
+
+## Entity Consistency Checking
+
+AI engines trust brands with clear entity structures. Entity consistency = identical name, categories, and descriptions across all AI-indexed sources.
+
+### What It Checks
+
+- **Brand Name Variations** — Detects "Acme CRM" vs "Acme" vs "ACME CRM" inconsistencies
+- **Description Alignment** — How consistently providers describe your brand
+- **Category Consistency** — Whether AI engines categorize you the same way
+
+### API Usage
+
+```bash
+# Full analysis
+curl -X POST http://localhost:3000/api/entity-consistency \
+  -H "Content-Type: application/json" \
+  -d '{"brandName": "Acme CRM", "productNames": ["Acme Pro", "Acme Enterprise"]}'
+
+# Quick score
+curl "http://localhost:3000/api/entity-consistency/quick?brand=Acme%20CRM"
+
+# Best practice tips
+curl http://localhost:3000/api/entity-consistency/tips
+```
+
+---
+
 ## API Reference
 
 | Endpoint | Method | Purpose |
@@ -364,6 +480,7 @@ User Query → Query Reformulation → Search Index Lookup → Re-ranking → Co
 | `/api/brand/[id]` | GET/PUT/DELETE | Brand CRUD |
 | `/api/probes` | GET/POST | List or create probes |
 | `/api/probes/[id]` | GET/PUT/DELETE | Probe CRUD |
+| `/api/probes/generate` | GET/POST | Generate validation probes (Be The Answer patterns) |
 | `/api/citations/probe` | POST | Execute probe across providers |
 | `/api/content` | GET/POST | List or create content |
 | `/api/content/[id]` | GET/PUT/DELETE | Content CRUD |
@@ -371,6 +488,8 @@ User Query → Query Reformulation → Search Index Lookup → Re-ranking → Co
 | `/api/content/optimize` | POST | Optimize content from probe data |
 | `/api/scoring/validate` | POST | Run 3-component AEO scoring |
 | `/api/scoring/brief` | POST | Generate data-driven content brief |
+| `/api/continuity` | POST | Landing page continuity scoring |
+| `/api/entity-consistency` | GET/POST | Entity consistency checking |
 | `/api/competitive/analyze` | POST | Run competitive analysis |
 | `/api/dashboard/stats` | GET | Aggregated citation stats |
 | `/api/dashboard/trends` | GET | Daily trends (`?days=30`) |
